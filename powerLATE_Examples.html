@@ -380,109 +380,246 @@ summary {
 
 
 <hr />
-<div id="examples" class="section level1">
-<h1>Examples</h1>
-<p>Suppose we want to recover power, without making the ordered-means assumption,</p>
-<p>we are interested in the power of an experiment, in which exactly half of the experimental subjects will be assigned to treatment and the other half to control. Further suppose the sample size is 800, the compliance rate is 0.35 and the treatment effect size is 0.8. We can compute the power of this experiment by the following:</p>
-<pre class="r"><code>library(powerLATE)
-res &lt;- powerLATE(pZ = 0.5, pi = 0.35, N = 800, kappa = 0.8)</code></pre>
+<p>This page demonstrates the usage of the <strong>powerLATE</strong> package.</p>
+<hr />
+<p><strong>Author:</strong> <a href="https://www.kirkbansak.com/">Kirk Bansak</a> (UCSD); Eddie Yang (UCSD);</p>
+<p><strong>Date:</strong> August 25, 2020</p>
+<p><strong>Version:</strong> 0.1.0</p>
+<p><strong>Reference:</strong> <a href="https://projecteuclid.org/download/pdfview_1/euclid.ss/1591171230">Bansak, K. (2020). A Generalized Approach to Power Analysis for Local Average Treatment Effects</a></p>
+<p>R code used in this demonstration can be downloaded from <a href="https://github.com/EddieYang211/powerLATE_aux/blob/master/code.R">here</a>.</p>
+<hr />
+<div id="contents" class="section level1">
+<h1>Contents</h1>
+<ol style="list-style-type: decimal">
+<li><p>Examples using <code>powerLATE()</code></p></li>
+<li><p>Examples using <code>powerLATE.cov()</code></p></li>
+</ol>
+<hr />
+</div>
+<div id="examples-using-powerlate" class="section level1">
+<h1>1. Examples using <code>powerLATE()</code></h1>
+<div id="recovering-power" class="section level3">
+<h3>1.1 Recovering power</h3>
+<pre class="r"><code>library(powerLATE)</code></pre>
+<p>Suppose we are interested in the power of an experiment, in which exactly half of the experimental subjects will be assigned to treatment and the other half to control. Further suppose the sample size is 3000, the compliance rate is 0.5 and the treatment effect size is 0.25. Without making the ordered-means assumption, we can compute the power of this experiment by the following:</p>
+<pre class="r"><code>results &lt;- powerLATE(pi = 0.5, N = 3000, kappa = 0.25)</code></pre>
 <pre><code>## Power analysis for two-sided test that LATE equals zero
 ## 
 ##  pZ = 0.5
-##  pi = 0.35
-##  N = 800
-##  kappa = 0.8
+##  pi = 0.5
+##  N = 3000
+##  kappa = 0.25
 ##  sig.level  = 0.05 
 ## 
 ## Given these parameter values, the conservative (lower) bound for Power:
 ##     power 
-## 0.8213495 
+## 0.8705345 
 ## 
 ## NOTE:  
 ## The Ordered-Means assumption is not being employed. If the user would like to make this assumption to narrow the bounds, set the argument assume.ord.means to TRUE.</code></pre>
-<p>In general, two parameters from the set {effect size (<code>kappa</code>), sample size (<code>N</code>), power (<code>power</code>)} must be specified, from which the third (target) parameter will be calculated. For example, if we are interested in the lower bound on the required sample size for a level of power of 0.8 to reject the null hypothesis, we can run the following:</p>
-<pre class="r"><code>res &lt;- powerLATE(pZ = 0.5, pi = 0.35, kappa = 0.8, power = 0.8)</code></pre>
+<hr />
+<p>In addition to the output that is printed in the console, <code>powerLATE()</code> returns both the list of input parameters and output parameters as invisible objects. We can get thses values by typing</p>
+<pre class="r"><code>results$input.parameter</code></pre>
+<pre><code>## $pZ
+## [1] 0.5
+## 
+## $pi
+## [1] 0.5
+## 
+## $N
+## [1] 3000
+## 
+## $kappa
+## [1] 0.25
+## 
+## $sig.level
+## [1] 0.05
+## 
+## $power
+## NULL
+## 
+## $effect.size
+## [1] TRUE
+## 
+## $assume.ord.means
+## [1] FALSE</code></pre>
+<pre class="r"><code>results$output.parameter</code></pre>
+<pre><code>##     power 
+## 0.8705345</code></pre>
+<hr />
+<p>We can also supply a list of compliance rates to get their corresponding power. Additionally, the treatment-assignment probability, <code>pZ</code> can be unequal (!= 0.5). Here we set <code>pZ = 0.25</code></p>
+<pre class="r"><code>powerLATE(pZ = 0.25, pi = c(0.3,0.4,0.5,0.6,0.7), N = 3000, kappa = 0.25)</code></pre>
+<pre><code>## Power analysis for two-sided test that LATE equals zero
+## 
+##  pZ = 0.25
+##  pi = Multiple values inputted (see table below)
+##  N = 3000
+##  kappa = 0.25
+##  sig.level  = 0.05 
+## 
+## Given these parameter values, the conservative (lower) bound for Power:
+##   power     User-inputted pi
+## 1 0.3526081 0.3             
+## 2 0.5589396 0.4             
+## 3 0.7502492 0.5             
+## 4 0.8853791 0.6             
+## 5 0.9581277 0.7             
+## 
+## NOTE:  
+## The Ordered-Means assumption is not being employed. If the user would like to make this assumption to narrow the bounds, set the argument assume.ord.means to TRUE. The Homoskedasticity assumption is currently being made because pZ does not equal 0.5.</code></pre>
+<hr />
+<p>We can also make the ordered-means assumption by setting <code>assume.ord.means = TRUE</code>, this will result in a higher conservative (lower) bound for power. (Note: please check that your data indeed comforms to the ordered-means assumption. For details on the assumption, see <a href="https://projecteuclid.org/download/pdfview_1/euclid.ss/1591171230">Bansak (2020)</a>)</p>
+<pre class="r"><code>powerLATE(pi = c(0.3,0.4,0.5,0.6,0.7), N = 3000, kappa = 0.25, assume.ord.means = TRUE)</code></pre>
 <pre><code>## Power analysis for two-sided test that LATE equals zero
 ## 
 ##  pZ = 0.5
-##  pi = 0.35
-##  kappa = 0.8
+##  pi = Multiple values inputted (see table below)
+##  N = 3000
+##  kappa = 0.25
+##  sig.level  = 0.05 
+## 
+## Given these parameter values, the conservative (lower) bound for Power:
+##   power     User-inputted pi
+## 1 0.5317330 0.3             
+## 2 0.7766286 0.4             
+## 3 0.9255487 0.5             
+## 4 0.9833136 0.6             
+## 5 0.9975507 0.7             
+## 
+## NOTE:  
+## The Ordered-Means assumption is being employed. User should confirm that the assumption is reasonable in the context of interest.</code></pre>
+<hr />
+<p>If the absolute effect is preferred to the effect size, we can recover power by supplying <code>tau</code> and <code>omega</code>, and setting <code>effect.size = FALSE</code>.</p>
+<pre class="r"><code>powerLATE(pi = 0.5, N = 3000, effect.size = FALSE, tau = 300, omega = 1500)</code></pre>
+<pre><code>## Power analysis for two-sided test that LATE equals zero
+## 
+##  pZ = 0.5
+##  pi = 0.5
+##  N = 3000
+##  tau = 300
+##  omega = 1500
+##  sig.level  = 0.05 
+## 
+## Given these parameter values, the conservative (lower) bound for Power:
+##     power 
+## 0.7123938 
+## 
+## NOTE:  
+## The Ordered-Means assumption is not being employed. If the user would like to make this assumption to narrow the bounds, set the argument assume.ord.means to TRUE.</code></pre>
+<hr />
+</div>
+<div id="recovering-required-sample-size" class="section level3">
+<h3>1.2 Recovering required sample size</h3>
+<p>In addition to making the ordered-means assumption and specifying absolute effect, if we fix <code>power</code> to be 0.8 but instead want to know the required sample sizes for various compliance rates, we can do so by</p>
+<pre class="r"><code>powerLATE(pi = c(0.5,0.6,0.7,0.8), power = 0.8, assume.ord.means = TRUE,
+          effect.size = FALSE, tau = 25, omega = 125)</code></pre>
+<pre><code>## Power analysis for two-sided test that LATE equals zero
+## 
+##  pZ = 0.5
+##  pi = Multiple values inputted (see table below)
+##  tau = 25
+##  omega = 125
 ##  Power = 0.8
 ##  sig.level  = 0.05 
 ## 
 ## Given these parameter values, the conservative (upper) bound for N (required sample size):
-##        N 
-## 756.7761 
+##   N        User-inputted pi
+## 1 3163.099 0.5             
+## 2 2194.198 0.6             
+## 3 1609.981 0.7             
+## 4 1230.802 0.8             
 ## 
 ## NOTE:  
-## The Ordered-Means assumption is not being employed. If the user would like to make this assumption to narrow the bounds, set the argument assume.ord.means to TRUE.</code></pre>
-<p>If absolute effect is desired instead of effect size, simply set <code>effect.size=FALSE</code> and specify <code>tau</code>, the hypothesized absolute effect, and <code>omega</code>, the within-group standard deviation of the outcome.</p>
-<pre class="r"><code>res &lt;- powerLATE(pZ = 0.5, pi = 0.35, N = 800, effect.size = FALSE, tau = 0.4, omega = 0.6,)</code></pre>
-<pre><code>## Power analysis for two-sided test that LATE equals zero
-## 
-##  pZ = 0.5
-##  pi = 0.35
-##  N = 800
-##  tau = 0.4
-##  omega = 0.6
-##  sig.level  = 0.05 
-## 
-## Given these parameter values, the conservative (lower) bound for Power:
-##     power 
-## 0.7104445 
-## 
-## NOTE:  
-## The Ordered-Means assumption is not being employed. If the user would like to make this assumption to narrow the bounds, set the argument assume.ord.means to TRUE.</code></pre>
-<p>We can also input a vector of values for any one parameter in the set {pi, N, kappa, power, tau, omega}.</p>
-<pre class="r"><code>res &lt;- powerLATE(pZ = 0.5, pi = 0.35, N = 800, kappa = seq(0.5, 1.0, 0.1))</code></pre>
-<pre><code>## Power analysis for two-sided test that LATE equals zero
-## 
-##  pZ = 0.5
-##  pi = 0.35
-##  N = 800
-##  kappa = Multiple values inputted (see table below)
-##  sig.level  = 0.05 
-## 
-## Given these parameter values, the conservative (lower) bound for Power:
-##   power     User-inputted kappa
-## 1 0.5181033 0.5                
-## 2 0.6399776 0.6                
-## 3 0.7419496 0.7                
-## 4 0.8213495 0.8                
-## 5 0.8797640 0.9                
-## 6 0.9208686 1.0                
-## 
-## NOTE:  
-## The Ordered-Means assumption is not being employed. If the user would like to make this assumption to narrow the bounds, set the argument assume.ord.means to TRUE.</code></pre>
-<p>With covariates, use <code>powerLATE.cov</code> and specify <code>r2dw</code> and <code>r2yw</code>.</p>
-<pre class="r"><code>res &lt;- powerLATE.cov(pZ = 0.5, pi = 0.35, N = 800, kappa = seq(0.5, 1.0, 0.1), r2dw = 0.2, r2yw = 0.3)</code></pre>
-<pre><code>## Power analysis for two-sided test that LATE equals zero
-## 
-##  pZ = 0.5
-##  pi = 0.35
-##  N = 800
-##  kappa = Multiple values inputted (see table below)
-##  r2dw = 0.2
-##  r2yw = 0.3
-##  sig.level  = 0.05 
-## 
-## Given these parameter values, the conservative (lower) bound for Power:
-##   power     User-inputted kappa
-## 1 0.5522840 0.5                
-## 2 0.6757927 0.6                
-## 3 0.7755263 0.7                
-## 4 0.8502388 0.8                
-## 5 0.9030156 0.9                
-## 6 0.9386345 1.0                
-## 
-## NOTE:  
-## The Ordered-Means assumption is not being employed. If the user would like to make this assumption to narrow the bounds, set the argument assume.ord.means to TRUE.</code></pre>
-<p>In addition to the message that is automatically printed out, <code>powerLATE</code> and <code>powerLATE.cov</code> also return the output parameter values as an invisible object, simply query</p>
-<pre class="r"><code>res$output.parameter</code></pre>
-<pre><code>##           [,1]      [,2]      [,3]      [,4]      [,5]      [,6]
-## power 0.552284 0.6757927 0.7755263 0.8502388 0.9030156 0.9386345</code></pre>
-<p>For more details and examples, see <code>?powerLATE</code> and <code>?powerLATE.cov</code></p>
+## The Ordered-Means assumption is being employed. User should confirm that the assumption is reasonable in the context of interest.</code></pre>
 <hr />
+</div>
+<div id="recovering-minimum-detectable-effect-size" class="section level3">
+<h3>1.3 Recovering minimum detectable effect size</h3>
+<p>To recover minimum detectable effect size, simply supply <code>power</code> and <code>N</code> (sample size). Here we supply a list of sample sizes and setting the compliance rate <code>pi = 0.6</code> and <code>power = 0.8</code></p>
+<pre class="r"><code>powerLATE(pi = 0.6, N = c(1000,1500,2000,2500,3000), power = 0.8)</code></pre>
+<pre><code>## Power analysis for two-sided test that LATE equals zero
+## 
+##  pZ = 0.5
+##  pi = 0.6
+##  N = Multiple values inputted (see table below)
+##  Power = 0.8
+##  sig.level  = 0.05 
+## 
+## Given these parameter values, the conservative (upper) bound for kappa (minimum detectable effect size):
+##   kappa     User-inputted N
+## 1 0.3348695 1000           
+## 2 0.2668604 1500           
+## 3 0.2278494 2000           
+## 4 0.2018525 2500           
+## 5 0.1829781 3000           
+## 
+## NOTE:  
+## The Ordered-Means assumption is not being employed. If the user would like to make this assumption to narrow the bounds, set the argument assume.ord.means to TRUE.</code></pre>
+<hr />
+</div>
+<div id="recovering-minimum-detectable-effect-absolute" class="section level3">
+<h3>1.4 Recovering minimum detectable effect (absolute)</h3>
+<p>Instead of minimum detectable effect size, we can instead get the minimum detectable absolute effect by setting <code>effect.size = FALSE</code> and supplying <code>omega</code>.</p>
+<pre class="r"><code>powerLATE(pZ = 0.4, pi = 0.6, N = c(1000,1500,2000,2500,3000),
+          power = 0.8, assume.ord.means = TRUE, 
+          effect.size = FALSE, omega = 50)</code></pre>
+<pre><code>## Power analysis for two-sided test that LATE equals zero
+## 
+##  pZ = 0.4
+##  pi = 0.6
+##  N = Multiple values inputted (see table below)
+##  omega = 50
+##  Power = 0.8
+##  sig.level  = 0.05 
+## 
+## Given these parameter values, the conservative (upper) bound for tau (minimum detectable effect):
+##   tau       User-inputted N
+## 1 15.244228 1000           
+## 2 12.398930 1500           
+## 3 10.717213 2000           
+## 4  9.574776 2500           
+## 5  8.733865 3000           
+## 
+## NOTE:  
+## The Ordered-Means assumption is being employed. User should confirm that the assumption is reasonable in the context of interest. The Homoskedasticity assumption is currently being made because pZ does not equal 0.5.</code></pre>
+<hr />
+</div>
+</div>
+<div id="examples-using-powerlate.cov" class="section level1">
+<h1>2. Examples using <code>powerLATE.cov()</code></h1>
+<p>The syntax and arguments of <code>powerLATE.cov()</code> are identical to <code>powerLATE()</code>, except that <code>powerLATE.cov()</code> requires two additional arguments:</p>
+<ul>
+<li><code>r2dw</code>: proportion of variation in D left unexplained by Z that is explained by covariates.</li>
+<li><code>r2yw</code>: proportion of variation in Y left unexplained by Z that is explained by covariates.</li>
+</ul>
+<p>Using the scenario in 1.4, we can calculate the minimum detectable absolute effect with <code>powerLATE.cov()</code> by</p>
+<pre class="r"><code>powerLATE.cov(pZ = 0.4, pi = 0.6, N = c(1000,1500,2000,2500,3000),
+              power = 0.8, assume.ord.means = TRUE, 
+              effect.size = FALSE, omega = 50, r2dw = 0.15, r2yw = 0.10)</code></pre>
+<pre><code>## Power analysis for two-sided test that LATE equals zero
+## 
+##  pZ = 0.4
+##  pi = 0.6
+##  N = Multiple values inputted (see table below)
+##  omega = 50
+##  Power = 0.8
+##  r2dw = 0.15
+##  r2yw = 0.1
+##  sig.level  = 0.05 
+## 
+## Given these parameter values, the conservative (upper) bound for tau (minimum detectable effect):
+##   tau       User-inputted N
+## 1 15.163852 1000           
+## 2 12.334647 1500           
+## 3 10.662115 2000           
+## 4  9.525799 2500           
+## 5  8.689340 3000           
+## 
+## NOTE:  
+## The Ordered-Means assumption is being employed. User should confirm that the assumption is reasonable in the context of interest. The Homoskedasticity assumption is currently being made because pZ does not equal 0.5.</code></pre>
+<p>Notice the conservative (upper) bounds for <code>tau</code> are slightly lower than those in 1.4, as part of the variation in treatment assignment and outcome is soaked up by covariate adjustment, resulting in a more powerful estimator.</p>
+<hr />
+<p>Please report bugs and let us know if you have any suggestions! -&gt; z5yang [at] ucsd.edu</p>
 </div>
 
 

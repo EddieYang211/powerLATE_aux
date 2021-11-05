@@ -11,7 +11,7 @@ This page demonstrates the usage of the **powerLATE** package.
 
 ***
 
-**Author:** [Kirk Bansak](https://www.kirkbansak.com/) (UCSD); Eddie Yang (UCSD); 
+**Author:** [Kirk Bansak](https://www.kirkbansak.com/) (UCSD); [Eddie Yang](https://www.eddieyang.net/) (UCSD); 
 
 **Date:** August 25, 2020
 
